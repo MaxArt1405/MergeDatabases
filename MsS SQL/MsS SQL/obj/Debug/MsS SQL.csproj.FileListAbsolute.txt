@@ -1,0 +1,12 @@
+C:\Users\Advision_User_02\source\repos\MsS SQL\MsS SQL\bin\Debug\MsS SQL.exe.config
+C:\Users\Advision_User_02\source\repos\MsS SQL\MsS SQL\bin\Debug\MsS SQL.exe
+C:\Users\Advision_User_02\source\repos\MsS SQL\MsS SQL\bin\Debug\MsS SQL.pdb
+C:\Users\Advision_User_02\source\repos\MsS SQL\MsS SQL\bin\Debug\EntityFramework.dll
+C:\Users\Advision_User_02\source\repos\MsS SQL\MsS SQL\bin\Debug\EntityFramework.SqlServer.dll
+C:\Users\Advision_User_02\source\repos\MsS SQL\MsS SQL\bin\Debug\EntityFramework.xml
+C:\Users\Advision_User_02\source\repos\MsS SQL\MsS SQL\bin\Debug\EntityFramework.SqlServer.xml
+C:\Users\Advision_User_02\source\repos\MsS SQL\MsS SQL\obj\Debug\MsS SQL.csprojAssemblyReference.cache
+C:\Users\Advision_User_02\source\repos\MsS SQL\MsS SQL\obj\Debug\MsS SQL.csproj.CoreCompileInputs.cache
+C:\Users\Advision_User_02\source\repos\MsS SQL\MsS SQL\obj\Debug\MsS SQL.csproj.CopyComplete
+C:\Users\Advision_User_02\source\repos\MsS SQL\MsS SQL\obj\Debug\MsS SQL.exe
+C:\Users\Advision_User_02\source\repos\MsS SQL\MsS SQL\obj\Debug\MsS SQL.pdb
