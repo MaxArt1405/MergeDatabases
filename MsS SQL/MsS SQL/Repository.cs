@@ -12,15 +12,15 @@ namespace MsS_SQL
     {
         private readonly string _connection;
         private readonly DbType _type;
+        private readonly string _owner;
 
-
-        public Repository(string connectionString, DbType currentType)
+        public Repository(string connectionString, DbType currentType, string owner)
         {
-
+            _owner = owner;
             _connection = connectionString;
             _type = currentType;
         }
-        public List<string> GetTableNames(string owner)
+        public List<string> GetTableNames()
         {
             var from = "";
             if (_type == DbType.MsSQL)
@@ -29,7 +29,7 @@ namespace MsS_SQL
             }
             if (_type == DbType.Oracle)
             {
-                from = $"ALL_TABLES WHERE OWNER = '{owner}'";
+                from = $"ALL_TABLES WHERE OWNER = '{_owner}'";
             }
             var select = $"SELECT UPPER(TABLE_NAME) FROM {from} ORDER BY TABLE_NAME";
 
@@ -51,7 +51,7 @@ namespace MsS_SQL
                 }
             }
         }
-        public List<TableObject> GetListOfColsAndTables(string owner)
+        public List<TableObject> GetListOfColsAndTables()
         {
             var from = "";
             if (_type == DbType.MsSQL)
@@ -60,7 +60,7 @@ namespace MsS_SQL
             }
             if (_type == DbType.Oracle)
             {
-                from = $"SYS.ALL_TAB_COLUMNS WHERE OWNER = '{owner}'";
+                from = $"SYS.ALL_TAB_COLUMNS WHERE OWNER = '{_owner}'";
             }
             var select = $"SELECT UPPER(TABLE_NAME), UPPER(COLUMN_NAME) FROM {from} ORDER BY TABLE_NAME";
 
@@ -95,7 +95,7 @@ namespace MsS_SQL
                 }
             }
         }
-        public Dictionary<string, List<string>> FindDifferenceInTables(List<string> FirstList, List<string> SecondList)
+        public Dictionary<string, List<string>> FindDifferenceInTablesDict(List<string> FirstList, List<string> SecondList)
         {
             var commonTables = FirstList.Intersect(SecondList).ToList();
 
@@ -104,6 +104,16 @@ namespace MsS_SQL
                 { "Has SQL not Oracle", FirstList.Except(commonTables).ToList() },
                 { "Has Oracle not SQL", SecondList.Except(commonTables).ToList() }
             };
+            return answer;
+        }
+        public List<string> FindDifferenceInTablesList(List<string> FirstList, List<string> SecondList)
+        {
+            var commonTables = FirstList.Intersect(SecondList).ToList();
+
+            var HasSQl = FirstList.Except(commonTables).ToList();
+            var HasOra = SecondList.Except(commonTables).ToList();
+            var answer = HasSQl.Union(HasOra).ToList();
+            answer.Sort();
             return answer;
         }
         public Dictionary<string, List<string>> FindDifferenceInCols(List<TableObject> FirstTable, List<TableObject> SecondTable)
@@ -133,6 +143,7 @@ namespace MsS_SQL
                     var elementsInORA = tmpORA.Columns.Except(intersect).ToList();
 
                     var difference = elementsInORA.Union(elementsInSQL).ToList();
+
                     if (difference != null && difference.Any())
                     {
                         diffs.Add(item.Table, difference);
