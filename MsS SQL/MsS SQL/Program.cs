@@ -6,9 +6,6 @@ namespace MsS_SQL
 {
     class Program
     {
-        private static object s;
-        private static object o;
-
         public static void Main(string[] args)
         {
             var msOwner = "ADSPACE_MPHH";
@@ -30,42 +27,36 @@ namespace MsS_SQL
 
             var diffsInStructure = SQLrepository.FindDifferenceInCols(listOfTableAndColsNamesSQL, listOfTableAndColsNamesORA);
 
-            Console.WriteLine("{0, 30}     |{1, 30}\n-------------------------------------------------------------------", "Oracle", "SQL");
-            foreach (var item in DiffList)
-            {
-                if (listOfTableNamesOracle.Contains(item))
-                {
-                    Console.WriteLine("{0, 30}     |{1, 30}", item, "----------");
-                }
-                if (listOfTableNamesSQL.Contains(item))
-                {
-                    Console.WriteLine("{0, 30}     |{1, 30}", "----------", item);
-                }
-            }
-            Console.WriteLine("\n--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n" +
-                              "{0, 67}     ||{1, 60}" +
-                              "\n--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n", "Oracle", "SQL");
             foreach (var item in diffsInStructure)
             {
                 var objSQL = listOfTableAndColsNamesSQL.Find(x => x.Table == item.Key);
                 var objORA = listOfTableAndColsNamesORA.Find(x => x.Table == item.Key);
-                if (objORA!= null && objSQL != null)
+                var c = 0;
+                if (objORA != null && objSQL != null)
                 {
-                    foreach(var i in item.Value)
-                    {
-                        if (objORA.Columns.Contains(i))
+                    foreach (var i in item.Value)
+                    {                       
+                        var list = item.Value.FindAll(x => x.ColumnName == i.ColumnName);
+                        if(list.Count > 1)
                         {
-                            Console.WriteLine("{0, 30}     |{1, 30}      ||{2,30}     |{3,30}", item.Key, i, item.Key, "-----");
-                        }
-                        if (objSQL.Columns.Contains(i))
-                        {
-                            Console.WriteLine("{0, 30}     |{1, 30}      ||{2,30}     |{3,30}", item.Key, "-----", item.Key, i);
-                        }
+                            if(list.First().ColumnType != list.Last().ColumnType)
+                            {
+                                if (c > 0)
+                                {
+                                    Console.WriteLine("{0, 20}|{1, 20}|{2,20} ||{3,20} | {4,20}", "", list.First().ColumnName, list.First().ColumnType, list.Last().ColumnName, list.Last().ColumnType);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("{0, 20}|{1, 20}|{2,20} ||{3,20} | {4,20}", item.Key, list.First().ColumnName, list.First().ColumnType, list.Last().ColumnName, list.Last().ColumnType);
+                                }
+                                c++;
+                            }  
+                        }                       
                     }
                 }
-                Console.WriteLine("--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------");
+                Console.WriteLine("--------------------------------------------------------------------------------------------------------------");
             }
-            Console.ReadKey();
+            Console.ReadKey();          
         }
     }
 }

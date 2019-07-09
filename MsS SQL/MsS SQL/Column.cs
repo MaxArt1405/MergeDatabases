@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace MsS_SQL
 {
-    public class TableObject
+    public class Column
     {
-        public string Table { get; set; }
-        public List<Column> Columns { get; set; }
+        public string ColumnName { get; set; }
+        public string ColumnType { get; set; }
     }
 }

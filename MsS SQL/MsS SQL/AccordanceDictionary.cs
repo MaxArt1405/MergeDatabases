@@ -6,9 +6,7 @@ using System.Threading.Tasks;
 
 namespace MsS_SQL
 {
-    public class TableObject
+    class AccordanceDictionary
     {
-        public string Table { get; set; }
-        public List<Column> Columns { get; set; }
     }
 }
