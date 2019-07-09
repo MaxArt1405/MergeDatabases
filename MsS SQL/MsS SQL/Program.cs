@@ -34,27 +34,43 @@ namespace MsS_SQL
                 var c = 0;
                 if (objORA != null && objSQL != null)
                 {
+                    var h = 0;
                     foreach (var i in item.Value)
-                    {                       
+                    {
                         var list = item.Value.FindAll(x => x.ColumnName == i.ColumnName);
                         if(list.Count > 1)
                         {
                             if(list.First().ColumnType != list.Last().ColumnType)
                             {
-                                if (c > 0)
+                                if(h < item.Value.Count/2)
                                 {
-                                    Console.WriteLine("{0, 20}|{1, 20}|{2,20} ||{3,20} | {4,20}", "", list.First().ColumnName, list.First().ColumnType, list.Last().ColumnName, list.Last().ColumnType);
+                                    if (c > 0)
+                                    {
+                                        Console.WriteLine("{0, 20}|{1, 25}|{2,20} ||{3,25} | {4,20}", "", list.First().ColumnName, list.First().ColumnType, list.Last().ColumnName, list.Last().ColumnType);
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("{0, 20}|{1, 25}|{2,20} ||{3,25} | {4,20}", item.Key, list.First().ColumnName, list.First().ColumnType, list.Last().ColumnName, list.Last().ColumnType);
+                                    }
+                                    c++;
+                                    h++;
                                 }
-                                else
-                                {
-                                    Console.WriteLine("{0, 20}|{1, 20}|{2,20} ||{3,20} | {4,20}", item.Key, list.First().ColumnName, list.First().ColumnType, list.Last().ColumnName, list.Last().ColumnType);
-                                }
-                                c++;
                             }  
-                        }                       
+                        }
+                        else
+                        {
+                            if (objORA.Columns.Contains(list.LastOrDefault()))
+                            {
+                                Console.WriteLine("{0, 20}|{1, 25}|{2,20} ||{3,25} | {4,20}", item.Key, list.First().ColumnName, list.First().ColumnType, "-------", "--------");
+                            }
+                            if (objSQL.Columns.Contains(list.LastOrDefault()))
+                            {
+                                Console.WriteLine("{0, 20}|{1, 25}|{2,20} ||{3,25} | {4,20}", item.Key, "-------", "--------", list.First().ColumnName, list.First().ColumnType);
+                            }
+                        }
                     }
-                }
-                Console.WriteLine("--------------------------------------------------------------------------------------------------------------");
+                }               
+                Console.WriteLine("----------------------------------------------------------------------------------------------------------------------");
             }
             Console.ReadKey();          
         }

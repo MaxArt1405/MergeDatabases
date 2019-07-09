@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.OracleClient;
@@ -177,7 +176,7 @@ namespace MsS_SQL
                                     answer.Add(column);
                                 }
                             }
-                        }
+                        }                       
                     }
                     else
                     {
@@ -208,7 +207,13 @@ namespace MsS_SQL
             {"NUMBER", new List<string>(){ "INT", "NUMERIC", "DECIMAL" } },
             {"FLOAT", new List<string>(){ "FLOAT" } },
             {"LONGRAW", new List<string>(){ "VARBINARY" } },
-            {"VARCHAR2", new List<string>(){ "VARCHAR" } }
+            {"VARCHAR2", new List<string>(){ "VARCHAR" } },
+            {"VARBINARY", new List<string>(){ "BLOB", "LONGRAW" }},
+            {"VARCHAR", new List<string>(){ "CLOB","VARCHAR2" }},
+            {"DATETIME2", new List<string>(){ "DATE" }},
+            {"INT", new List<string>(){ "NUMBER" }},
+            {"NUMERIC", new List<string>(){ "NUMBER" }},
+            {"DECIMAL", new List<string>(){ "NUMBER" }},
         };
     }
 }
