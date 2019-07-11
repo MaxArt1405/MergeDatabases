@@ -26,7 +26,8 @@ namespace MsS_SQL
             var listOfTableAndColsNamesORA = ORArepository.GetListOfColsAndTables();
 
             var diffsInStructure = SQLrepository.FindDifferenceInCols(listOfTableAndColsNamesSQL, listOfTableAndColsNamesORA);
-
+            Console.WriteLine("{0, 20}|{1, 25}|{2,10}|{3,5}||{4,25}|{5,10}|{6,5}\n" +
+                "----------------------------------------------------------------------------------------------------------------", "Table", "Column", "Type", "Lenth", "Column", "Type", "Length");
             foreach (var item in diffsInStructure)
             {
                 var objSQL = listOfTableAndColsNamesSQL.Find(x => x.Table == item.Key);
@@ -38,41 +39,43 @@ namespace MsS_SQL
                     foreach (var i in item.Value)
                     {
                         var list = item.Value.FindAll(x => x.ColumnName == i.ColumnName);
-                        if(list.Count > 1)
+                        if (list.Count > 1)
                         {
-                            if(list.First().ColumnType != list.Last().ColumnType)
+                            if (list.First().ColumnType != list.Last().ColumnType)
                             {
-                                if(h < item.Value.Count/2)
+                                if (h < item.Value.Count / 2)
                                 {
+
                                     if (c > 0)
                                     {
-                                        Console.WriteLine("{0, 20}|{1, 25}|{2,20} ||{3,25} | {4,20}", "", list.First().ColumnName, list.First().ColumnType, list.Last().ColumnName, list.Last().ColumnType);
+                                        Console.WriteLine("{0, 20}|{1, 25}|{2,10}|{3,5}||{4,25}|{5,10}|{6,5}|", "", list.First().ColumnName, list.First().ColumnType, list.First().DataLength, list.Last().ColumnName, list.Last().ColumnType, list.Last().DataLength);
                                     }
                                     else
                                     {
-                                        Console.WriteLine("{0, 20}|{1, 25}|{2,20} ||{3,25} | {4,20}", item.Key, list.First().ColumnName, list.First().ColumnType, list.Last().ColumnName, list.Last().ColumnType);
+                                        Console.WriteLine("{0, 20}|{1, 25}|{2,10}|{3,5}||{4,25}|{5,10}|{6,5}|", item.Key, list.First().ColumnName, list.First().ColumnType, list.First().DataLength, list.Last().ColumnName, list.Last().ColumnType, list.Last().DataLength);
                                     }
                                     c++;
                                     h++;
+
                                 }
-                            }  
+                            }
                         }
                         else
                         {
-                            if (objORA.Columns.Contains(list.LastOrDefault()))
-                            {
-                                Console.WriteLine("{0, 20}|{1, 25}|{2,20} ||{3,25} | {4,20}", item.Key, list.First().ColumnName, list.First().ColumnType, "-------", "--------");
-                            }
                             if (objSQL.Columns.Contains(list.LastOrDefault()))
                             {
-                                Console.WriteLine("{0, 20}|{1, 25}|{2,20} ||{3,25} | {4,20}", item.Key, "-------", "--------", list.First().ColumnName, list.First().ColumnType);
+                                Console.WriteLine("{0, 20}|{1, 25}|{2,10}|{3,5}||{4,25}|{5,10}|{6,5}|", item.Key, list.First().ColumnName, list.First().ColumnType, list.First().DataLength, "-------", "--------", "---");
+                            }
+                            if (objORA.Columns.Contains(list.LastOrDefault()))
+                            {
+                                Console.WriteLine("{0, 20}|{1, 25}|{2,10}|{3,5}||{4,25}|{5,10}|{6,5}|", item.Key, "-------", "--------", "---", list.First().ColumnName, list.First().ColumnType, list.First().DataLength);
                             }
                         }
                     }
-                }               
-                Console.WriteLine("----------------------------------------------------------------------------------------------------------------------");
+                }
+                Console.WriteLine("-------------------------------------------------------------------------------------------------------------");
             }
-            Console.ReadKey();          
+            Console.ReadKey();
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.OracleClient;
@@ -53,16 +54,19 @@ namespace MsS_SQL
         }
         public List<TableObject> GetListOfColsAndTables()
         {
-            var from = "";
+            var from = string.Empty;
+            var items = string.Empty;
             if (_type == DbType.MsSQL)
             {
                 from = "INFORMATION_SCHEMA.COLUMNS";
+                items = "UPPER(TABLE_NAME), UPPER(COLUMN_NAME), UPPER(DATA_TYPE), CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE, DATETIME_PRECISION";
             }
             if (_type == DbType.Oracle)
             {
                 from = $"SYS.ALL_TAB_COLUMNS WHERE OWNER = '{_owner}'";
+                items = "UPPER(TABLE_NAME), UPPER(COLUMN_NAME), UPPER(DATA_TYPE), DATA_LENGTH";
             }
-            var select = $"SELECT UPPER(TABLE_NAME), UPPER(COLUMN_NAME), UPPER(DATA_TYPE) FROM {from} ORDER BY TABLE_NAME";
+            var select = $"SELECT {items} FROM {from} ORDER BY TABLE_NAME";
 
             var tempData = new List<TableObject>();
             using (var connection = GetConnection(_connection, _type))
@@ -75,21 +79,35 @@ namespace MsS_SQL
                     {
                         while (reader.Read())
                         {
+
+                            var length = (reader[3] == DBNull.Value) ? ((reader[4] == DBNull.Value) ? Convert.ToInt32(reader[6]) : 0) : (_type == DbType.Oracle && (string)reader[2] == "NUMBER") ? 0 : Convert.ToInt32(reader[3]);
+
                             var last = tempData.LastOrDefault();
                             if (last != null && last.Table == reader.GetString(0))
                             {
                                 last.Columns.Add(new Column()
                                 {
                                     ColumnName = reader.GetString(1),
-                                    ColumnType = reader.GetString(2)
+                                    ColumnType = GetType(reader, _type),
+                                    DataLength = length,
+                                    DbType = _type
                                 });
                             }
                             else
                             {
-                                var obj = new TableObject
+                                var obj = new TableObject()
                                 {
                                     Table = reader.GetString(0),
-                                    Columns = new List<Column>() { new Column() { ColumnName = reader.GetString(1), ColumnType = reader.GetString(2) } }
+                                    Columns = new List<Column>()
+                                    {
+                                        new Column()
+                                            {
+                                                ColumnName = reader.GetString(1),
+                                                ColumnType = GetType(reader,_type),
+                                                DataLength = length,
+                                                DbType = _type
+                                            }
+                                        }
                                 };
                                 tempData.Add(obj);
                             }
@@ -99,7 +117,6 @@ namespace MsS_SQL
                 }
             }
         }
-
         public Dictionary<string, List<string>> FindDifferenceInTablesDict(List<string> FirstList, List<string> SecondList)
         {
             var commonTables = FirstList.Intersect(SecondList).ToList();
@@ -132,7 +149,7 @@ namespace MsS_SQL
                 }
             }
             return new Dictionary<string, List<Column>>();
-        }       
+        }
 
         private Dictionary<string, List<Column>> SearchDifference(List<TableObject> FirstTable, List<TableObject> SecondTable)
         {
@@ -159,33 +176,26 @@ namespace MsS_SQL
         private List<Column> CompareColumns(TableObject firstObj, TableObject secondObj)
         {
             var answer = new List<Column>();
-            foreach (var column in firstObj.Columns)
+            foreach (var firstColumn in firstObj.Columns)
             {
-                var columnORA = secondObj.Columns.Find(x => x.ColumnName == column.ColumnName);
-                if (columnORA != null)
+                var secondColumn = secondObj.Columns.Find(x => x.ColumnName == firstColumn.ColumnName);
+                if (secondColumn != null)
                 {
-                    if (column.ColumnName == columnORA.ColumnName)
+                    if (firstColumn.ColumnType == secondColumn.ColumnType)
                     {
-                        if (accordance.Keys.Contains(columnORA.ColumnType))
+                        if (firstColumn.DataLength != secondColumn.DataLength)
                         {
-                            accordance.TryGetValue(columnORA.ColumnType, out List<string> value);
-                            if (value != null && value.Any())
-                            {
-                                if (!value.Contains(column.ColumnType))
-                                {
-                                    answer.Add(column);
-                                }
-                            }
-                        }                       
+                            answer.Add(firstColumn);
+                        }
                     }
                     else
                     {
-                        answer.Add(column);
+                        answer.Add(firstColumn);
                     }
                 }
                 else
                 {
-                    answer.Add(column);
+                    answer.Add(firstColumn);
                 }
             }
             return answer;
@@ -199,21 +209,74 @@ namespace MsS_SQL
                 return new SqlConnection(connectionString);
             throw new ConfigurationException();
         }
-        private readonly Dictionary<string, List<string>> accordance = new Dictionary<string, List<string>>
+        private static Type GetType (IDataReader reader, DbType type)
         {
-            {"BLOB", new List<string>(){ "VARBINARY" }},
-            {"CLOB", new List<string>(){ "VARCHAR" }},
-            {"DATE", new List<string>(){ "DATETIME2" }},
-            {"NUMBER", new List<string>(){ "INT", "NUMERIC", "DECIMAL" } },
-            {"FLOAT", new List<string>(){ "FLOAT" } },
-            {"LONGRAW", new List<string>(){ "VARBINARY" } },
-            {"VARCHAR2", new List<string>(){ "VARCHAR" } },
-            {"VARBINARY", new List<string>(){ "BLOB", "LONGRAW" }},
-            {"VARCHAR", new List<string>(){ "CLOB","VARCHAR2" }},
-            {"DATETIME2", new List<string>(){ "DATE" }},
-            {"INT", new List<string>(){ "NUMBER" }},
-            {"NUMERIC", new List<string>(){ "NUMBER" }},
-            {"DECIMAL", new List<string>(){ "NUMBER" }},
-        };
+            if(type == DbType.MsSQL)
+            {
+                if((string)reader[2] == "NUMERIC")
+                {
+                    return typeof(int);
+                }
+                if((string)reader[2] == "INT")
+                {
+                    return typeof(int);
+                }
+                if((string)reader[2] == "FLOAT")
+                {
+                    return typeof(float);
+                }
+                if((string)reader[2] == "VARACHAR")
+                {
+                    return typeof(string);
+                }
+                if((string)reader[2] == "VARBINARY")
+                {
+                    return typeof(byte[]);
+                }
+                if((string)reader[2] == "DATETIME2")
+                {
+                    return typeof(DateTime);
+                }
+            }
+            if(type == DbType.Oracle)
+            {
+                if ((string)reader[2] == "NUMBER")
+                {
+                    if(reader[5] != DBNull.Value)
+                    {
+                        return typeof(int);
+                    }
+                    else
+                    {
+                        return typeof(float);
+                    }
+                }
+                if ((string)reader[2] == "CLOB")
+                {
+                    return typeof(string);
+                }
+                if ((string)reader[2] == "LONG RAW")
+                {
+                    return typeof(byte[]);
+                }
+                if ((string)reader[2] == "FLOAT")
+                {
+                    return typeof(float);
+                }
+                if ((string)reader[2] == "VARACHAR2")
+                {
+                    return typeof(string);
+                }
+                if ((string)reader[2] == "BLOB")
+                {
+                    return typeof(byte[]);
+                }
+                if ((string)reader[2] == "DATE")
+                {
+                    return typeof(DateTime);
+                }
+            }
+            return typeof(string);
+        }
     }
 }
